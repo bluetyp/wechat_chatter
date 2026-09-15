@@ -38,10 +38,10 @@
 
 ## 新增 JSON 键
 
-| 键 | 含义 | 4.1.10.53 已确认值 |
-|---|---|---|
-| `cdnGetServiceAddr` | `GetService(std::string)` 服务定位器 | `0x4ca2130` |
-| `cdnManagerGetterAddr` | 按类型名取 CdnManager 上下文的 getter | `0x4e59dec` |
+| 键 | 含义 | 4.1.10.53 已确认值 | 4.1.11.53 已确认值 |
+|---|---|---|---|
+| `cdnGetServiceAddr` | `GetService(std::string)` 服务定位器 | `0x4ca2130` | `0x50a15d0` |
+| `cdnManagerGetterAddr` | 按类型名取 CdnManager 上下文的 getter | `0x4e59dec` | `0x5259290` |
 
 `ctx+0x40` 的字段偏移写死在 `script.js`（跨版本一般稳定；若新版本解析失败需复核此偏移）。
 
@@ -68,3 +68,12 @@ getter（Y）→ Y 的调用者即分发函数，里面紧挨着的另一个 `bl
 - 重启 onebot 后给 bot 账号发一张图（微信自动下载）：日志出现
   `[+] 下载hook回填 uploadGlobalX0: 0xb8946ef18`，且事后用该指针上传成功
 - 两条独立路径得到同一指针，互为印证
+
+## 验证记录（4.1.11.53，macOS arm64，SIP 已关闭，pid 直连模式）
+
+- 重启 onebot 后**不发任何图**，直接 API 发图：日志出现
+  `[+] 冷启动服务定位器解析 CdnManager: 0x1609dde18`，发送成功
+  （filehelper 连续两次，均 `{"status":"ok"}`，buf2resp 回执 len=560）
+- 静态交叉确认：`0x5259290` 内部 `adrp+ldr` 引用的全局槽指向字符串
+  `N4mars3cdn10CdnManagerE`；`0x50a15d0` 与 `0x5259290` 在全 binary 的
+  25 处分发函数里成对紧邻 `bl`（后者直接消费前者返回值）
